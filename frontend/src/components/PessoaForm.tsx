@@ -12,6 +12,22 @@ export function PessoaForm({ onPessoaCriada }: PessoaFormProps) {
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
 
+  function mostrarMensagemSucesso(texto: string) {
+    setMensagem(texto);
+
+    setTimeout(() => {
+      setMensagem("");
+    }, 5000);
+  }
+
+  function mostrarMensagemErro(texto: string) {
+    setErro(texto);
+
+    setTimeout(() => {
+      setErro("");
+    }, 5000);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -26,15 +42,17 @@ export function PessoaForm({ onPessoaCriada }: PessoaFormProps) {
 
       setNome("");
       setIdade("");
-      setMensagem("Pessoa cadastrada com sucesso.");
-      setTimeout(() => setMensagem(""), 5000);
+
+      mostrarMensagemSucesso("Pessoa cadastrada com sucesso.");
+
       onPessoaCriada();
     } catch (error) {
-      setErro(
+      const mensagemErro =
         error instanceof Error
           ? error.message
-          : "Erro ao cadastrar pessoa."
-      );
+          : "Erro ao cadastrar pessoa.";
+
+      mostrarMensagemErro(mensagemErro);
     }
   }
 
@@ -45,6 +63,7 @@ export function PessoaForm({ onPessoaCriada }: PessoaFormProps) {
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="nome">Nome</label>
+
           <input
             id="nome"
             type="text"
@@ -56,6 +75,7 @@ export function PessoaForm({ onPessoaCriada }: PessoaFormProps) {
 
         <div>
           <label htmlFor="idade">Idade</label>
+
           <input
             id="idade"
             type="number"
@@ -71,6 +91,7 @@ export function PessoaForm({ onPessoaCriada }: PessoaFormProps) {
       </form>
 
       {mensagem && <p>{mensagem}</p>}
+
       {erro && <p>{erro}</p>}
     </section>
   );

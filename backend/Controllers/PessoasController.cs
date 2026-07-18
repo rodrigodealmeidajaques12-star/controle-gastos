@@ -30,7 +30,23 @@ public class PessoasController(AppDbContext context) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Pessoa>> Criar(CriarPessoaRequest request)
     {
-        var pessoa = new Pessoa { Nome = request.Nome.Trim(), Idade = request.Idade };
+        var nome = request.Nome.Trim();
+
+        bool pessoaExiste = await context.Pessoas.AnyAsync(p =>
+            p.Nome.ToLower() == nome.ToLower() &&
+            p.Idade == request.Idade);
+
+        if (pessoaExiste)
+        {
+            return BadRequest("Já existe uma pessoa cadastrada com esse nome e essa idade.");
+        }
+
+        var pessoa = new Pessoa
+        {
+            Nome = nome,
+            Idade = request.Idade
+        };
+
         context.Pessoas.Add(pessoa);
         await context.SaveChangesAsync();
 
@@ -41,13 +57,27 @@ public class PessoasController(AppDbContext context) : ControllerBase
     public async Task<IActionResult> Atualizar(int id, CriarPessoaRequest request)
     {
         var pessoa = await context.Pessoas.FindAsync(id);
+
         if (pessoa is null)
         {
             return NotFound();
         }
 
-        pessoa.Nome = request.Nome.Trim();
+        var nome = request.Nome.Trim();
+
+        bool pessoaExiste = await context.Pessoas.AnyAsync(p =>
+            p.Id != id &&
+            p.Nome.ToLower() == nome.ToLower() &&
+            p.Idade == request.Idade);
+
+        if (pessoaExiste)
+        {
+            return BadRequest("Já existe uma pessoa cadastrada com esse nome e essa idade.");
+        }
+
+        pessoa.Nome = nome;
         pessoa.Idade = request.Idade;
+
         await context.SaveChangesAsync();
 
         return NoContent();
@@ -57,6 +87,7 @@ public class PessoasController(AppDbContext context) : ControllerBase
     public async Task<IActionResult> Excluir(int id)
     {
         var pessoa = await context.Pessoas.FindAsync(id);
+
         if (pessoa is null)
         {
             return NotFound();
